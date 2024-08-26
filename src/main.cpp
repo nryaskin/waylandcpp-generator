@@ -24,7 +24,7 @@ public:
     /**
      * Parse input strings.
      *
-     * Parse input of the form "--config" "<config>" "--output" "<output>" --dry-run
+     * Parse input of the form "--config" "<CONFIG>" "--output" "<OUTPUT>" --dry-run
      * In case of other options throws runtime_error("Unknown option: <option_name>")
      */
     GeneratorArgs(int argc, char *argv[]) {
@@ -33,7 +33,6 @@ public:
             if (!arg.starts_with("--")) {
                 throw std::runtime_error(std::format("Argument '{}' is not an option or option value!", arg));
             }
-
 
             arg.erase(0, 2);
 
@@ -72,8 +71,8 @@ int main(int argc, char *argv[]) {
     if (args.help) {
         std::cout << "C++ wayland header generator:\n";
         std::cout << "  --help show this help message\n";
-        std::cout << "  --dry-run create <OUTPUT>/files.cmake file\n";
-        std::cout << "  --output change <OUTPUT> variable, defaults to ./tmp\n";
+        std::cout << "  --dry-run list headers files to generate\n";
+        std::cout << "  --output change <OUTPUT> variable, defaults to ./tmp, ignored if --dry-run set\n";
         std::cout << "  --config path to wayland specification xml, defaults to \"/usr/share/wayland/wayland.xml\"" << std::endl;
         return 0;
     }
@@ -81,45 +80,25 @@ int main(int argc, char *argv[]) {
     std::vector<wg::WLInterface> interfaces;
     pt::ptree tree;
 
-    std::cout << std::format("Parsing wayland protocol spec: '{}', generated source dir: '{}'", args.config.string(), args.output.string()) << std::endl;
+    // TODO: Maybe add debug login later
+    //std::cout << std::format("Parsing wayland protocol spec: '{}', generated source dir: '{}'", args.config.string(), args.output.string()) << std::endl;
     pt::read_xml(args.config, tree);
     auto xml_interfaces = tree.get_child("protocol");
 
     // Q: Why this form sometimes doesn't work?
     auto protocol_name = tree.get_child("protocol.<xmlattr>.name").data();
-    std::cout << "Protocol name: " << protocol_name << std::endl;
+    // TODO: Maybe add debug login later
+    //std::cout << "Protocol name: " << protocol_name << std::endl;
     for (auto& interface: xml_interfaces) {
         if (interface.first == "interface") {
             interfaces.push_back(wg::WLInterface::create_from_xml(interface.second));
         }
     }
 
-#if 0
-// TODO: Add verbose option to generator
-    for (auto& interface: interfaces) {
-        std::cout << interface << std::endl;
-    }
-#endif
-
     if (args.dry_run) {
-        std::fstream f(args.output.string() + "/files.cmake", f.out);
-        if (!f.is_open()) {
-            throw std::runtime_error(std::format("Cannot open file)"));
-        }
-        auto header_dir = args.output / "include" / "waylandcpp";
-        //auto source_dir = args.output / "src";
-
-        //f << "set(GENERATED_SOURCES ";
-        //for (auto& interface : interfaces) {
-        //    f << std::format("{}.cpp\n", std::string("src/") + interface.name);
-        //}
-        //f << ")\n\n";
-
-        f << "set(GENERATED_HEADERS ";
         for (auto& interface : interfaces) {
-            f << std::format("{}.hpp\n", std::string("include/waylandcpp/") + interface.name);
+            std::cout << std::format("{}/{}.hpp\n", "include/waylandcpp", interface.name);
         }
-        f << ")\n";
     } else {
         std::vector<cpp::include_t> includes;
         includes.push_back(cpp::AngleInclusion("string"));

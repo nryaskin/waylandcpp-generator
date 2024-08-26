@@ -22,15 +22,9 @@ In this example it is assumed that wayland config exists in `/usr/share/wayland/
 To see what files are going to be generated use following command:
 
 ```
-mkdir generated
-waylandcpp-generator --dry-run --output ./generated --config /usr/share/wayland/wayland.xml
-```
-
-File `generated/files.cmake` is created(TODO: Change files.cmake from this to files list) 
-
-```
-$ cat generated/files.cmake 
-set(GENERATED_HEADERS include/waylandcpp/wl_display.hpp
+waylandcpp-generator --dry-run --config /usr/share/wayland/wayland.xml
+$ ./build/src/waylandcpp-generator --dry-run --config /usr/share/wayland/wayland.xml
+include/waylandcpp/wl_display.hpp
 include/waylandcpp/wl_registry.hpp
 include/waylandcpp/wl_callback.hpp
 include/waylandcpp/wl_compositor.hpp
@@ -52,11 +46,11 @@ include/waylandcpp/wl_output.hpp
 include/waylandcpp/wl_region.hpp
 include/waylandcpp/wl_subcompositor.hpp
 include/waylandcpp/wl_subsurface.hpp
-)
 ```
-To generate files remove --dry-run:
+
+To generate files remove *--dry-run* and add *--output* to use folders other than `./tmp`:
 ```
-waylandcpp-generator --output ./generated --config /usr/share/wayland/wayland.xml
+mkdir generated && waylandcpp-generator --output ./generated --config /usr/share/wayland/wayland.xml
 ```
 
 Folder `generated/include` is created:
